@@ -1,13 +1,5 @@
 import React from "react";
 
-import SpeedSvg from '../../assets/speed.svg';
-import AccelerationSvg from '../../assets/acceleration.svg';
-import ForceSvg from '../../assets/force.svg';
-import GasolineSvg from '../../assets/gasoline.svg';
-import ExchangeSvg from '../../assets/exchange.svg';
-import PeopleSvg from '../../assets/people.svg';
-
-
 
 import { Accessory } from "../../components/Accessory";
 import { BackButton } from "../../components/BackButton";
@@ -30,71 +22,72 @@ import {
   Rent,
 } from "./styles";
 import { Button } from "../../components/Button";
-import { useNavigation } from "@react-navigation/native";
+import { useRootStackParamList } from "../../hooks/useRootStackParamList";
+import { useRoute } from "@react-navigation/native";
+import { CarDTO } from "../../dtos/CarDTO";
+import { getAccessoryIcon } from "../../utils/getAccessories";
+
+interface Params {
+  car: CarDTO;
+}
 
 export function CarDetails() {
+  const navigation = useRootStackParamList();
+  const route = useRoute();
+  const { car } = route.params as Params;
 
-  const navigation = useNavigation();
-  
-  function handleScheduling(){
-  navigation.navigate('Scheduling')
+  function handleScheduling() {
+    navigation.navigate("Scheduling");
   }
+
+  function handleGoBack() {
+    navigation.goBack();
+  }
+
   return (
     <Container>
       <Header>
-        <BackButton
-          onPress={() => {
-            console.log("teste");
-          }}
-        />
+        <BackButton onPress={handleGoBack} />
       </Header>
       <CarImages>
         <ImageSlider
-          imageUrl={[
-            "https://www.pngplay.com/wp-content/uploads/13/Audi-R8-Transparent-Background.png",
-          ]}
+          imageUrl={car.photos}
         />
       </CarImages>
 
       <Content>
         <Details>
           <Description>
-            <Brand>Lambo</Brand>
-            <Name>Huracan</Name>
+            <Brand>{car.brand}</Brand>
+            <Name>{car.name}</Name>
           </Description>
 
           <Rent>
-            <Period>Ao dia</Period>
-            <Price>R$25</Price>
+            <Period>{car.rent.period}</Period>
+            <Price>{`R$${car.rent.price}`}</Price>
           </Rent>
         </Details>
 
-          <Accessories>
-
-        <Accessory name="380km/h" icon={SpeedSvg} />
-        <Accessory name="3.2s" icon={AccelerationSvg} />
-        <Accessory name="800 HP" icon={ForceSvg} />
-        <Accessory name="Gasolina" icon={GasolineSvg} />
-        <Accessory name="Auto" icon={ExchangeSvg} />
-        <Accessory name="2 Pessoas" icon={PeopleSvg} />
-
-
-          </Accessories>
+        <Accessories>
+          {car.accessories.map((accessory) => (
+            <Accessory
+              key={accessory.type}
+              name={accessory.name}
+              icon={getAccessoryIcon(accessory.type)}
+            />
+          ))}
+        </Accessories>
 
         <About>
-          {" "}
-          info All dependencies react-native-iphone-x-helper@1.3.1 Done in
-          6.48s.info All dependencies react-native-iphone-x-helper@1.3.1 Done in
-          6.48s.info All dependencies react-native-iphone-x-helper@1.3.1 Done in
-          6.48s.
+         {car.about}
         </About>
-
       </Content>
-          <Footer>
-            <Button title="Escolher período do aluguel"  onPress={handleScheduling}/>
-          </Footer>
-      
-
+      <Footer>
+        <Button
+          title="Escolher período do aluguel"
+          onPress={handleScheduling}
+        />
+      </Footer>
     </Container>
   );
 }
