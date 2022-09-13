@@ -1,11 +1,4 @@
-import React from "react";
-
-import SpeedSvg from "../../assets/speed.svg";
-import AccelerationSvg from "../../assets/acceleration.svg";
-import ForceSvg from "../../assets/force.svg";
-import GasolineSvg from "../../assets/gasoline.svg";
-import ExchangeSvg from "../../assets/exchange.svg";
-import PeopleSvg from "../../assets/people.svg";
+import React, { useEffect, useState } from "react";
 
 import { Feather } from "@expo/vector-icons";
 
@@ -14,7 +7,6 @@ import { BackButton } from "../../components/BackButton";
 import { ImageSlider } from "../../components/ImageSlider";
 
 import {
-  
   Accessories,
   Brand,
   CalendarIcon,
@@ -43,54 +35,114 @@ import { Button } from "../../components/Button";
 import { useTheme } from "styled-components";
 import { RFValue } from "react-native-responsive-fontsize";
 
-import { useNavigation } from "@react-navigation/native";
+import { useRoute } from "@react-navigation/native";
+import { CarDTO } from "../../dtos/CarDTO";
+import { getAccessoryIcon } from "../../utils/getAccessories";
+import { useRootStackParamList } from "../../hooks/useRootStackParamList";
+import { format } from "date-fns";
+import { getPlatformDate } from "../../utils/getPlatformDate";
+import api from "../../services/api";
+import { Alert } from "react-native";
 
+interface Params {
+  car: CarDTO;
+  dates: string[];
+}
+
+interface RentalPeriodInterface {
+  start: string;
+  end: string;
+}
 
 export function SchedulingDetails() {
+  //STATES
+  const [rentalPeriod, setRentalPeriod] = useState<RentalPeriodInterface>(
+    {} as RentalPeriodInterface
+  );
+  const [loading, setLoading] = useState(false)
+
   const theme = useTheme();
 
-  const navigation = useNavigation();
-  
-  function handleSchedulingComplete(){
-  navigation.navigate('SchedulingComplete')
+  //Navigation
+
+  const navigation = useRootStackParamList();
+  const route = useRoute();
+  const { car, dates } = route.params as Params;
+
+  //Functions
+  const rentalTotal = Number(dates.length * car.rent.price);
+
+  async function handleSchedulingComplete() {
+    setLoading(true);
+    const response = await api.get(`/schedules_bycars/${car.id}`);
+
+    const unavailable_dates = [...response.data.unavailable_dates, ...dates];
+
+    api.post(`/schedules_byuser/`, {
+      user_id: 1,
+      car,
+      startDate: format(getPlatformDate(new Date(dates[0])), "dd/MM/yyyy"),
+      endDate: format(
+        getPlatformDate(new Date(dates[dates.length - 1])),
+        "dd/MM/yyyy"
+      )
+    });
+    api
+      .put(`/schedules_bycars/${car.id}`, {
+        id: car.id,
+        unavailable_dates,
+      })
+      .then((res) => navigation.navigate("SchedulingComplete"))
+      .catch((error) =>
+        {Alert.alert("Não foi possível realizar o agendamento", error),
+      setLoading(false)}
+      );
   }
+
+  function handleGoBack() {
+    navigation.goBack();
+  }
+
+  useEffect(() => {
+    setRentalPeriod({
+      start: format(getPlatformDate(new Date(dates[0])), "dd/MM/yyyy"),
+      end: format(
+        getPlatformDate(new Date(dates[dates.length - 1])),
+        "dd/MM/yyyy"
+      ),
+    });
+  }, []);
+
   return (
     <Container>
       <Header>
-        <BackButton
-          onPress={() => {
-            console.log("teste");
-          }}
-        />
+        <BackButton onPress={handleGoBack} />
       </Header>
       <CarImages>
-        <ImageSlider
-          imageUrl={[
-            "https://www.pngplay.com/wp-content/uploads/13/Audi-R8-Transparent-Background.png",
-          ]}
-        />
+        <ImageSlider imageUrl={car.photos} />
       </CarImages>
 
       <Content>
         <Details>
           <Description>
-            <Brand>Lambo</Brand>
-            <Name>Huracan</Name>
+            <Brand>{car.brand}</Brand>
+            <Name>{car.name}</Name>
           </Description>
 
           <Rent>
-            <Period>Ao dia</Period>
-            <Price>R$25</Price>
+            <Period>{car.rent.period}</Period>
+            <Price>R${car.rent.price}</Price>
           </Rent>
         </Details>
 
         <Accessories>
-          <Accessory name="380km/h" icon={SpeedSvg} />
-          <Accessory name="3.2s" icon={AccelerationSvg} />
-          <Accessory name="800 HP" icon={ForceSvg} />
-          <Accessory name="Gasolina" icon={GasolineSvg} />
-          <Accessory name="Auto" icon={ExchangeSvg} />
-          <Accessory name="2 Pessoas" icon={PeopleSvg} />
+          {car.accessories.map((accessory) => (
+            <Accessory
+              key={accessory.type}
+              name={accessory.name}
+              icon={getAccessoryIcon(accessory.type)}
+            />
+          ))}
         </Accessories>
 
         <RentalPeriod>
@@ -103,7 +155,7 @@ export function SchedulingDetails() {
           </CalendarIcon>
           <DateInfo>
             <DateTitle>DE</DateTitle>
-            <DateValue>06/09/2022</DateValue>
+            <DateValue>{rentalPeriod.start}</DateValue>
           </DateInfo>
           <Feather
             name="chevron-right"
@@ -111,22 +163,29 @@ export function SchedulingDetails() {
             color={theme.colors.shape}
           />
           <DateInfo>
-            <DateTitle>DE</DateTitle>
-            <DateValue>06/09/2022</DateValue>
+            <DateTitle>ATÉ</DateTitle>
+            <DateValue>{rentalPeriod.end}</DateValue>
           </DateInfo>
         </RentalPeriod>
 
-          <RentalPrice>
-            <RentalPriceLabel>TOTAL</RentalPriceLabel>
-            <RentalPriceDetails>
-              <RentalPriceQuota></RentalPriceQuota>
-              <RentalPriceTotal></RentalPriceTotal>
-            </RentalPriceDetails>
-          </RentalPrice>
-
+        <RentalPrice>
+          <RentalPriceLabel>TOTAL</RentalPriceLabel>
+          <RentalPriceDetails>
+            <RentalPriceQuota>
+              R${car.rent.price} x {dates.length} diárias.
+            </RentalPriceQuota>
+            <RentalPriceTotal>R${rentalTotal}</RentalPriceTotal>
+          </RentalPriceDetails>
+        </RentalPrice>
       </Content>
       <Footer>
-        <Button title="Confirmar" onPress={handleSchedulingComplete} color={theme.colors.success} />
+        <Button
+          title="Confirmar"
+          onPress={handleSchedulingComplete}
+          color={theme.colors.success}
+          loading={loading}
+          enabled={!loading}
+        />
       </Footer>
     </Container>
   );

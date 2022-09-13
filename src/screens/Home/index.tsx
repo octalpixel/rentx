@@ -10,22 +10,26 @@ import {
 import Logo from "../../assets/logo.svg";
 import { Car } from "../../components/Car";
 import { CarDetails } from "../CarDetails";
-
-import { Carlist, Container, Header, HeaderContent, TotalCars } from "./styles";
+import {Ionicons} from '@expo/vector-icons'
+import { Carlist, Container, Header, HeaderContent, MyCarsButton, TotalCars } from "./styles";
 import { useRootStackParamList } from "../../hooks/useRootStackParamList/index";
 import api from "../../services/api";
 import { CarDTO } from "../../dtos/CarDTO";
 import { Load } from "../../components/Load";
+import { useTheme } from "styled-components";
 
 export function Home() {
   const [cars, setCars] = useState<CarDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const navigation = useRootStackParamList();
-  
+  const theme = useTheme();
   function handleCarDetails(car: CarDTO) {
     navigation.navigate("CarDetails", {car});
   }
 
+  function handleOpenMyCars(car: CarDTO) {
+    navigation.navigate("MyCars");
+  }
   
   useEffect(() => {
     async function fetchCars() {
@@ -66,6 +70,10 @@ export function Home() {
           )}
         />
       )}
+
+      <MyCarsButton onPress={handleOpenMyCars}>
+        <Ionicons name="ios-car-sport" size={32} color={theme.colors.shape}/>
+      </MyCarsButton>
     </Container>
   );
 }
