@@ -9,14 +9,9 @@ import {
   useFonts,
 } from "@expo-google-fonts/archivo";
 
-import { Home } from "./src/screens/Home";
 import theme from "./src/styles/theme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Scheduling } from "./src/screens/Scheduling";
-import { SchedulingDetails } from "./src/screens/SchedulingDetails";
-import { SchedulingComplete } from "./src/screens/SchedulingComplete";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
 import { Routes } from "./src/routes";
 
 export default function App() {
@@ -34,12 +29,9 @@ export default function App() {
   SplashScreen.hideAsync();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      
-
       <ThemeProvider theme={theme}>
-     <Routes />
+        <Routes />
       </ThemeProvider>
-      
     </GestureHandlerRootView>
   );
 }
