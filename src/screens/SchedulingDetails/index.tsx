@@ -70,7 +70,7 @@ export function SchedulingDetails() {
   const { car, dates } = route.params as Params;
 
   //Functions
-  const rentalTotal = Number(dates.length * car.rent.price);
+  const rentalTotal = Number(dates.length * car.price);
 
   async function handleSchedulingComplete() {
     setLoading(true);
@@ -134,8 +134,8 @@ export function SchedulingDetails() {
           </Description>
 
           <Rent>
-            <Period>{car.rent.period}</Period>
-            <Price>R${car.rent.price}</Price>
+            <Period>{car.period}</Period>
+            <Price>R${car.price}</Price>
           </Rent>
         </Details>
 
@@ -176,7 +176,7 @@ export function SchedulingDetails() {
           <RentalPriceLabel>TOTAL</RentalPriceLabel>
           <RentalPriceDetails>
             <RentalPriceQuota>
-              R${car.rent.price} x {dates.length} diárias.
+              R${car.price} x {dates.length} diárias.
             </RentalPriceQuota>
             <RentalPriceTotal>R${rentalTotal}</RentalPriceTotal>
           </RentalPriceDetails>

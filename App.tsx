@@ -13,6 +13,7 @@ import theme from "./src/styles/theme";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { Routes } from "./src/routes";
+import { AppProvider } from "./src/hooks/useAuth";
 
 export default function App() {
   SplashScreen.preventAutoHideAsync();
@@ -30,7 +31,9 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider theme={theme}>
-        <Routes />
+        <AppProvider>
+          <Routes />
+        </AppProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );
