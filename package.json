@@ -9,9 +9,13 @@
     "web": "expo start --web",
     "api": "json-server ./src/services/server.json --host 192.168.1.12 --port 3333 --delay 1000"
   },
+  "resolutions": {
+    "@types/react": "^17"
+  },
   "dependencies": {
     "@expo-google-fonts/archivo": "^0.2.2",
     "@expo-google-fonts/inter": "^0.2.2",
+    "@nozbe/watermelondb": "^0.24.0",
     "@react-navigation/bottom-tabs": "^6.4.0",
     "@react-navigation/native": "^6.0.12",
     "@react-navigation/native-stack": "^6.8.0",
@@ -39,6 +43,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
+    "@babel/plugin-proposal-decorators": "^7.19.1",
     "@types/react": "~18.0.0",
     "@types/react-native": "~0.69.1",
     "@types/react-native-calendars": "^1.1264.3",
