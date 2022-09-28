@@ -28,7 +28,6 @@ export function InputPassword({ iconName, value, ...rest }: InputProps) {
 
   function handlePasswordVisibility() {
     setIsPasswordVisible(!isPasswordVisible);
-    console.log(isPasswordVisible);
   }
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Keyboard, KeyboardAvoidingView, StatusBar } from "react-native";
 import * as Yup from "yup";
 import {
@@ -20,38 +20,49 @@ import {
 } from "./styles";
 import { useRootStackParamList } from "../../hooks/useRootStackParamList";
 import { useAuth } from "../../hooks/useAuth/auth";
+import { database } from "../../databases";
 
 export function SignIn() {
   const theme = useTheme();
   const navigation = useRootStackParamList();
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+
+useEffect(()=> {
+  async function loadData(){
+    const userCollection = database.get('users');
+    const users = await userCollection.query().fetch();
+    console.log(users)
+  }
+  loadData()
+},[])
+
+
   async function handleSignIn() {
-   
+    
     try {
-      
       const schema = Yup.object().shape({
         email: Yup.string()
-          .required("E-mail obrigatório")
-          .email("Digite um e-mail válido"),
+        .required("E-mail obrigatório")
+        .email("Digite um e-mail válido"),
         password: Yup.string().required("Password obrigatório"),
       });
-
+      
       await schema.validate({ email, password });
-
+      
       signIn({ email, password });
+      
     } catch (error) {
-      console.log('error')
+      
       if (error instanceof Yup.ValidationError) {
         Alert.alert("Opa", error.message);
       } else {
         Alert.alert(
           "handleSignIn error",
-          "Ocorreu um erro ao fazer login, verifique as credenciais",
-          error.message
+          "Ocorreu um erro ao fazer login, verifique as credenciais"
         );
       }
     }
@@ -62,10 +73,10 @@ export function SignIn() {
   }
 
   return (
-          <ScrollView>
-    <KeyboardAvoidingView behavior="position" enabled>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <Container>
+    <ScrollView>
+      <KeyboardAvoidingView behavior="position" enabled>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <Container>
             <StatusBar
               barStyle="dark-content"
               backgroundColor="transparent"
@@ -115,9 +126,9 @@ export function SignIn() {
                 light
               />
             </ButtonsContainer>
-        </Container>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
-          </ScrollView>
+          </Container>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 }

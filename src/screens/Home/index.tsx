@@ -32,18 +32,29 @@ export function Home() {
   // }
 
   useEffect(() => {
+    //let is mounted is to prevent memory leak caused by updating the state after the component is destroyed
+    let isMounted = true;
+
     async function fetchCars() {
       try {
         setLoading(true);
         const response = await api.get("/cars");
-        setCars(response.data);
+        if (isMounted) {
+          setCars(response.data);
+        }
       } catch (error) {
         console.log("fetchCars error: " + error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
     fetchCars();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // useEffect(() => {
