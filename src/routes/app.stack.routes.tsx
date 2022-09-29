@@ -15,10 +15,10 @@ const { Navigator, Screen } = createNativeStackNavigator();
 
 export function AppStackRoutes() {
   return (
-    <Navigator screenOptions={{ headerShown: false }} initialRouteName="Home">
+    <Navigator screenOptions={{ headerShown: false }} initialRouteName="HomeScreen">
       <Screen name="Splash" component={Splash} />
       <Screen
-        name="Home"
+        name="HomeScreen"
         component={Home}
         options={{ gestureEnabled: false }}
       />

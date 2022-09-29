@@ -46,6 +46,7 @@ export function InputPassword({ iconName, value, ...rest }: InputProps) {
         secureTextEntry={isPasswordVisible}
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
+        autoCorrect={false}
         {...rest}
       />
       <IconView isFocused={isFocused}>

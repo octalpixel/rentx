@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StatusBar } from "react-native";
+import { Alert, StatusBar } from "react-native";
 import { RFValue } from "react-native-responsive-fontsize";
 
 import Logo from "../../assets/logo.svg";
@@ -14,23 +14,69 @@ import {
   withSpring,
 } from "react-native-reanimated";
 import { LoadAnimation } from "../../components/LoadAnimation";
-
+import { useNetInfo } from "@react-native-community/netinfo";
+import { synchronize } from "@nozbe/watermelondb/sync";
+import { database } from "../../databases";
 // const ButtonAnimated = Animated.createAnimatedComponent(RectButton);
-
+import {Car as CarModel} from '../../databases/model/Car';
 export function Home() {
-  const [cars, setCars] = useState<CarDTO[]>([]);
+  const [cars, setCars] = useState<CarModel[]>([]);
   const [loading, setLoading] = useState(true);
   const navigation = useRootStackParamList();
+  const netInfo = useNetInfo();
   // const theme = useTheme();
 
   function handleCarDetails(car: CarDTO) {
     navigation.navigate("CarDetails", { car });
   }
 
+  async function offlineSynchronize() {
+    await synchronize({
+      database,
+      pullChanges: async ({ lastPulledAt }) => {
+         const response = await api
+          .get(`cars/sync/pull?lastPulledVersion=${lastPulledAt || 0}`);
+
+        const { changes, latestVersion } = response.data;
+        return { changes, timestamp: latestVersion };
+      },
+      pushChanges: async ({ changes }) => {
+        const user = changes.users;
+        await api.post('users/sync', user);
+      },
+    });
+    console.log('offlineSynchronize')
+  }
+
   // function handleOpenMyCars(car: CarDTO) {
   //   navigation.navigate("MyCars");
   // }
 
+  // useEffect(() => {
+  //   //let is mounted is to prevent memory leak caused by updating the state after the component is destroyed
+  //   let isMounted = true;
+
+  //   async function fetchCars() {
+  //     setLoading(true);
+  //     try {
+  //       const response = await api.get("/cars");
+  //       if (isMounted) {
+  //         setCars(response.data);
+  //       }
+  //     } catch (error) {
+  //       console.log("fetchCars error: " + error);
+  //     } finally {
+  //       if (isMounted) {
+  //         setLoading(false);
+  //       }
+  //     }
+  //   }
+  //   fetchCars();
+
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, []);
   useEffect(() => {
     //let is mounted is to prevent memory leak caused by updating the state after the component is destroyed
     let isMounted = true;
@@ -38,9 +84,11 @@ export function Home() {
     async function fetchCars() {
       try {
         setLoading(true);
-        const response = await api.get("/cars");
+        const carCollection = database.get<CarModel>('cars');
+        const cars = await carCollection.query().fetch();
+
         if (isMounted) {
-          setCars(response.data);
+          setCars(cars);
         }
       } catch (error) {
         console.log("fetchCars error: " + error);
@@ -56,6 +104,22 @@ export function Home() {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if(netInfo.isConnected === true){
+      offlineSynchronize();
+    }
+  }, [netInfo.isConnected]);
+
+  //UseEffect for knowing when the user is Online
+  //   useEffect(()=>{
+  // if(netInfo.isConnected){
+  //   Alert.alert('Você está Online')
+  // }else{
+  //   Alert.alert('Você está Offline')
+
+  // }
+  //   },[netInfo.isConnected])
 
   // useEffect(() => {
   //   BackHandler.addEventListener("hardwareBackPress", () => {

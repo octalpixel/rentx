@@ -3,6 +3,7 @@ import { RectButton } from 'react-native-gesture-handler';
 import { RFValue } from 'react-native-responsive-fontsize';
 import styled from 'styled-components/native';
 import { CarDTO } from '../../dtos/CarDTO';
+import {Car as CarModel} from '../../databases/model/Car';
 
 export const Container = styled.View`
   flex: 1;
@@ -32,7 +33,7 @@ color: ${({theme}) => theme.colors.text} ;
 
 `;
 
-export const Carlist= styled(FlatList as new (props: FlatListProps<CarDTO>) => FlatList<CarDTO>).attrs({
+export const Carlist= styled(FlatList as new (props: FlatListProps<CarModel>) => FlatList<CarModel>).attrs({
 contentContainerStyle:{
   padding: 24
 },

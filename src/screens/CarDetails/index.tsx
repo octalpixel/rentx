@@ -32,6 +32,8 @@ import { Button } from "../../components/Button";
 import { useRootStackParamList } from "../../hooks/useRootStackParamList";
 import { useRoute } from "@react-navigation/native";
 import { CarDTO } from "../../dtos/CarDTO";
+import {Car as CarModel} from '../../databases/model/Car';
+
 import { getAccessoryIcon } from "../../utils/getAccessories";
 import { useTheme } from "styled-components";
 
