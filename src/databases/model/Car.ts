@@ -23,7 +23,7 @@ period!: string;
 price!: number;
 
 @field('thumbnail')
-thumbnail!: number;
+thumbnail!: string;
 
 }
 

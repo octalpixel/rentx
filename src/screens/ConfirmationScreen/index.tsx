@@ -22,23 +22,23 @@ interface Params {
 }
 
 export function ConfirmationScreen() {
-  const  {width } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const navigation = useRootStackParamList();
   const route = useRoute();
 
-const {message, nextScreenRoute, title } = route.params as Params;
+  const { message, nextScreenRoute, title } = route.params as Params;
 
-
-  function handleSchedulingComplete(){
-  navigation.navigate(nextScreenRoute)
+  function handleSchedulingComplete() {
+    navigation.navigate(nextScreenRoute);
   }
 
   return (
     <Container>
-        <StatusBar 
+      <StatusBar
         barStyle="light-content"
         translucent
-        backgroundColor='transparent'/>
+        backgroundColor="transparent"
+      />
       <LogoWrapper>
         <LogoSvg width={width} />
       </LogoWrapper>
@@ -47,14 +47,11 @@ const {message, nextScreenRoute, title } = route.params as Params;
         <DoneSvg width={80} height={80} />
         <Title>{title}</Title>
 
-        <Message>
-          {message}
-         
-        </Message>
+        <Message>{message}</Message>
       </Content>
 
       <Footer>
-        <ConfirmButton title="OK" onPress={handleSchedulingComplete}/>
+        <ConfirmButton title="OK" onPress={handleSchedulingComplete} />
       </Footer>
     </Container>
   );

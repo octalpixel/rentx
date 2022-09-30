@@ -8,9 +8,11 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   ScrollView,
-  
 } from "react-native";
-import { GestureHandlerRootView, TouchableWithoutFeedback } from "react-native-gesture-handler";
+import {
+  GestureHandlerRootView,
+  TouchableWithoutFeedback,
+} from "react-native-gesture-handler";
 import { useTheme } from "styled-components";
 import { BackButton } from "../../components/BackButton";
 import { Button } from "../../components/Button";
@@ -34,8 +36,11 @@ import {
   Section,
 } from "./styles";
 import * as Yup from "yup";
+import { useNetInfo } from "@react-native-community/netinfo";
 
 export function Profile() {
+  const netInfo = useNetInfo();
+
   const { user, signOut, updateUser } = useAuth();
   const [option, setOption] = useState<"dataEdit" | "passwordEdit">("dataEdit");
   const [avatar, setAvatar] = useState(user.avatar);
@@ -59,17 +64,20 @@ export function Profile() {
           onPress: () => {
             signOut();
           },
-          style: 'default'
+          style: "default",
         },
       ]
     );
   }
   function handleOptionChange(optionSelected: "dataEdit" | "passwordEdit") {
+    if(netInfo.isConnected === false && optionSelected === 'passwordEdit'){
+      Alert.alert('Você esta Offline','Para mudar a senha, conecte-se a internet.')
+    }
+    
     setOption(optionSelected);
   }
 
   async function handleSelectAvatar() {
-   
     const result = (await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -113,83 +121,99 @@ export function Profile() {
   }
 
   return (
-    
+    <GestureHandlerRootView >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView behavior="position" enabled>
+          <ScrollView>
+            <Container>
+              <Header>
+                <HeaderTop>
+                  <BackButton
+                    color={theme.colors.shape}
+                    onPress={handleGoBack}
+                  />
+                  <HeaderTitle>Editar Perfil</HeaderTitle>
+                  <LogoutButton onPress={handleSignOut}>
+                    <Feather
+                      name="power"
+                      size={24}
+                      color={theme.colors.shape}
+                    />
+                  </LogoutButton>
+                </HeaderTop>
 
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-    <KeyboardAvoidingView behavior="position" enabled>
-      <ScrollView>
-          <Container>
-            <Header>
-              <HeaderTop>
-                <BackButton color={theme.colors.shape} onPress={handleGoBack} />
-                <HeaderTitle>Editar Perfil</HeaderTitle>
-                <LogoutButton onPress={handleSignOut}>
-                  <Feather name="power" size={24} color={theme.colors.shape} />
-                </LogoutButton>
-              </HeaderTop>
+                <PhotoContainer>
+                  {!!avatar && <Photo source={{ uri: avatar }} />}
+                  <PhotoButton onPress={handleSelectAvatar}>
+                    <Feather
+                      name="camera"
+                      size={24}
+                      color={theme.colors.shape}
+                    />
+                  </PhotoButton>
+                </PhotoContainer>
+              </Header>
 
-              <PhotoContainer>
-                {!!avatar && <Photo source={{ uri: avatar }} />}
-                <PhotoButton onPress={handleSelectAvatar}>
-                  <Feather name="camera" size={24} color={theme.colors.shape} />
-                </PhotoButton>
-              </PhotoContainer>
-            </Header>
-
-            <Content style={{ marginBottom: useBottomTabBarHeight() }}>
-              <Options>
-                <Option
-                  active={option === "dataEdit"}
-                  onPress={() => handleOptionChange("dataEdit")}
+              <Content style={{ marginBottom: useBottomTabBarHeight() }}>
+                <Options>
+                  <Option
+                    active={option === "dataEdit"}
+                    onPress={() => handleOptionChange("dataEdit")}
                   >
-                  <OptionTitle active={option === "dataEdit"}>
-                    Dados
-                  </OptionTitle>
-                </Option>
-                <Option
-                  active={option === "passwordEdit"}
-                  onPress={() => handleOptionChange("passwordEdit")}
-                >
-                  <OptionTitle active={option === "passwordEdit"}>
-                    Trocar Senha
-                  </OptionTitle>
-                </Option>
-              </Options>
-              {option === "dataEdit" ? (
-                <Section>
-                  <Input
-                    iconName="user"
-                    placeholder="Nome"
-                    autoCorrect={false}
-                    defaultValue={user.name}
-                    onChangeText={setName}
+                    <OptionTitle active={option === "dataEdit"}>
+                      Dados
+                    </OptionTitle>
+                  </Option>
+                  <Option
+                    active={option === "passwordEdit"}
+                    onPress={() => handleOptionChange("passwordEdit")}
+                  >
+                    <OptionTitle active={option === "passwordEdit"}>
+                      Trocar Senha
+                    </OptionTitle>
+                  </Option>
+                </Options>
+                {option === "dataEdit" ? (
+                  <Section>
+                    <Input
+                      iconName="user"
+                      placeholder="Nome"
+                      autoCorrect={false}
+                      defaultValue={user.name}
+                      onChangeText={setName}
                     />
-                  <Input
-                    iconName="mail"
-                    editable={false}
-                    defaultValue={user.email}
+                    <Input
+                      iconName="mail"
+                      editable={false}
+                      defaultValue={user.email}
                     />
-                  <Input
-                    iconName="credit-card"
-                    placeholder="CNH"
-                    keyboardType="numeric"
-                    defaultValue={user.driver_license}
-                    onChangeText={setDriverLicense}
+                    <Input
+                      iconName="credit-card"
+                      placeholder="CNH"
+                      keyboardType="numeric"
+                      defaultValue={user.driver_license}
+                      onChangeText={setDriverLicense}
                     />
-                </Section>
-              ) : (
-                <Section>
-                  <InputPassword iconName="lock" placeholder="Senha Atual" />
-                  <InputPassword iconName="lock" placeholder="Nova Senha" />
-                  <InputPassword iconName="lock" placeholder="Repetir Senha" />
-                </Section>
-              )}
-              <Button title="Salvar Alterações" onPress={handleProfileUpdate} />
-            </Content>
-          </Container>
-    </ScrollView>
-      </KeyboardAvoidingView>
-        </TouchableWithoutFeedback>
-              
+                  </Section>
+                ) : (
+                  <Section>
+                    <InputPassword iconName="lock" placeholder="Senha Atual" />
+                    <InputPassword iconName="lock" placeholder="Nova Senha" />
+                    <InputPassword
+                      iconName="lock"
+                      placeholder="Repetir Senha"
+                    />
+                  </Section>
+                )}
+                <Button
+                  title="Salvar Alterações"
+                  onPress={handleProfileUpdate}
+                />
+              </Content>
+            </Container>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+    </GestureHandlerRootView>
   );
 }

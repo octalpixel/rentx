@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StatusBar, StyleSheet } from "react-native";
 
 import { Accessory } from "../../components/Accessory";
@@ -24,6 +24,7 @@ import {
   Footer,
   Header,
   Name,
+  OfflineInfo,
   Period,
   Price,
   Rent,
@@ -32,13 +33,15 @@ import { Button } from "../../components/Button";
 import { useRootStackParamList } from "../../hooks/useRootStackParamList";
 import { useRoute } from "@react-navigation/native";
 import { CarDTO } from "../../dtos/CarDTO";
-import {Car as CarModel} from '../../databases/model/Car';
+import { Car as CarModel } from "../../databases/model/Car";
 
 import { getAccessoryIcon } from "../../utils/getAccessories";
 import { useTheme } from "styled-components";
+import api from "../../services/api";
+import { useNetInfo } from "@react-native-community/netinfo";
 
 interface Params {
-  car: CarDTO;
+  car: CarModel;
 }
 
 export function CarDetails() {
@@ -46,6 +49,10 @@ export function CarDetails() {
   const navigation = useRootStackParamList();
   const route = useRoute();
   const { car } = route.params as Params;
+  const netInfo = useNetInfo();
+
+  //STATES
+  const [carUpdated, setCarUpdated] = useState<CarDTO>({} as CarDTO);
 
   //Animations
   const scrollY = useSharedValue(0);
@@ -80,6 +87,17 @@ export function CarDetails() {
     navigation.goBack();
   }
 
+  //UseEffects
+  useEffect(() => {
+    async function fetchCarUpdated() {
+      const response = await api.get(`/cars/${car.id}`);
+      setCarUpdated(response.data);
+    }
+    if (netInfo.isConnected === true) {
+      fetchCarUpdated();
+    }
+  }, [netInfo.isConnected]);
+
   return (
     <Container>
       <StatusBar
@@ -88,13 +106,25 @@ export function CarDetails() {
         backgroundColor="transparent"
       />
 
-      <Animated.View style={[headerStyleAnimation,  styles.header, { backgroundColor: theme.colors.background_secondary}]}>
+      <Animated.View
+        style={[
+          headerStyleAnimation,
+          styles.header,
+          { backgroundColor: theme.colors.background_secondary },
+        ]}
+      >
         <Header>
-          <BackButton onPress={handleGoBack}  />
+          <BackButton onPress={handleGoBack} />
         </Header>
         <Animated.View style={sliderCarsStyleAnimation}>
           <CarImages>
-            <ImageSlider imageUrl={car.photos} />
+            <ImageSlider
+              imageUrl={
+                !!carUpdated.photos
+                  ? carUpdated.photos
+                  : [{ id: car.thumbnail, photo: car.thumbnail }]
+              }
+            />
           </CarImages>
         </Animated.View>
       </Animated.View>
@@ -102,8 +132,7 @@ export function CarDetails() {
       <Animated.ScrollView
         contentContainerStyle={{
           paddingHorizontal: 24,
-          paddingTop: getStatusBarHeight()+180,
-          
+          paddingTop: getStatusBarHeight() + 180,
         }}
         showsVerticalScrollIndicator={false}
         onScroll={scrollHandler}
@@ -117,34 +146,39 @@ export function CarDetails() {
 
           <Rent>
             <Period>{car.period}</Period>
-            <Price>{`R$${car.price}`}</Price>
+            <Price>{`R$ ${netInfo.isConnected === true ? car.price : '...' }`}</Price>
           </Rent>
         </Details>
 
-        <Accessories>
-          {car.accessories.map((accessory) => (
-            <Accessory
-              key={accessory.type}
-              name={accessory.name}
-              icon={getAccessoryIcon(accessory.type)}
-            />
-          ))}
-        </Accessories>
+        {carUpdated.accessories && (
+          <Accessories>
+            {carUpdated.accessories.map((accessory) => (
+              <Accessory
+                key={accessory.type}
+                name={accessory.name}
+                icon={getAccessoryIcon(accessory.type)}
+              />
+            ))}
+          </Accessories>
+        )}
 
         <About>
           {car.about}
-          {car.about}
-          {car.about}
-          {car.about}
-          {car.about}
-          {car.about}
+         
         </About>
       </Animated.ScrollView>
       <Footer>
         <Button
           title="Escolher período do aluguel"
           onPress={handleScheduling}
-        />
+          enabled={netInfo.isConnected === true}
+          />
+          {netInfo.isConnected === false &&
+
+            <OfflineInfo>
+            Conecte-se a internet para ver mais detalhes e agendar seu aluguel.
+          </OfflineInfo>
+          }
       </Footer>
     </Container>
   );
@@ -152,9 +186,8 @@ export function CarDetails() {
 
 const styles = StyleSheet.create({
   header: {
-    position: 'absolute',
-    overflow: 'hidden',
+    position: "absolute",
+    overflow: "hidden",
     zIndex: 1,
   },
- 
-})
+});
