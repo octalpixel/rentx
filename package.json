@@ -20,7 +20,7 @@
     "@react-navigation/bottom-tabs": "^6.4.0",
     "@react-navigation/native": "^6.0.12",
     "@react-navigation/native-stack": "^6.8.0",
-    "@types/react-dom": "^18.0.6",
+    "@types/react-dom": "~18.0.0",
     "axios": "^0.27.2",
     "date-fns": "^2.29.2",
     "expo": "~46.0.9",
@@ -46,9 +46,9 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.9",
+    "@babel/core": "^7.18.6",
     "@babel/plugin-proposal-decorators": "^7.19.1",
-    "@types/react": "^18.0.21",
+    "@types/react": "~18.0.0",
     "@types/react-native": "~0.69.1",
     "@types/react-native-calendars": "^1.1264.3",
     "@types/styled-components-react-native": "^5.1.3",

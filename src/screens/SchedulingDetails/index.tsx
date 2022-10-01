@@ -105,16 +105,17 @@ export function SchedulingDetails() {
         total: rentalTotal,
       })
       .then((res) =>
-        navigation.navigate("ConfirmationScreen", {
-          nextScreenRoute: "Home",
-          title: "Carro alugado!",
-          message:
-            " Agora você só precisa ir\naté a concessionária da RENTX\npegar o seu automóvel.",
-        })
+     { navigation.navigate("ConfirmationScreen", {
+        nextScreenRoute: "Home",
+        title: "Carro alugado!",
+        message:
+        "Agora você só precisa ir\naté a concessionária da RENTX\npegar o seu automóvel.",
+      }),
+      console.log(res)}
       )
       .catch((error) => {
-        Alert.alert("Não foi possível realizar o agendamento", error),
-          setLoading(false);
+        setLoading(false);
+        Alert.alert("Não foi possível realizar o agendamento", error)
       });
   }
 
@@ -155,7 +156,7 @@ export function SchedulingDetails() {
               ? carUpdated.photos
               : [{ id: car.thumbnail, photo: car.thumbnail }]
           }
-        />{" "}
+        />
       </CarImages>
 
       <Content>
