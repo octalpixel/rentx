@@ -6,6 +6,9 @@ import { Accessory } from "../../components/Accessory";
 import { BackButton } from "../../components/BackButton";
 import { ImageSlider } from "../../components/ImageSlider";
 
+import { RFValue } from "react-native-responsive-fontsize";
+import { useTheme } from "styled-components";
+import { Button } from "../../components/Button";
 import {
   Accessories,
   Brand,
@@ -31,19 +34,16 @@ import {
   RentalPriceQuota,
   RentalPriceTotal,
 } from "./styles";
-import { Button } from "../../components/Button";
-import { useTheme } from "styled-components";
-import { RFValue } from "react-native-responsive-fontsize";
 
-import { useRoute } from "@react-navigation/native";
-import { CarDTO } from "../../dtos/CarDTO";
-import { getAccessoryIcon } from "../../utils/getAccessories";
-import { useRootStackParamList } from "../../hooks/useRootStackParamList";
-import { format } from "date-fns";
-import { getPlatformDate } from "../../utils/getPlatformDate";
-import api from "../../services/api";
-import { Alert } from "react-native";
 import { useNetInfo } from "@react-native-community/netinfo";
+import { useRoute } from "@react-navigation/native";
+import { format } from "date-fns";
+import { Alert } from "react-native";
+import { CarDTO } from "../../dtos/CarDTO";
+import { useRootStackParamList } from "../../hooks/useRootStackParamList";
+import api from "../../services/api";
+import { getAccessoryIcon } from "../../utils/getAccessories";
+import { getPlatformDate } from "../../utils/getPlatformDate";
 
 interface Params {
   car: CarDTO;
@@ -77,6 +77,7 @@ export function SchedulingDetails() {
 
   async function handleSchedulingComplete() {
     setLoading(true);
+    console.log("handleSchedulingComplete button clicked");
     // const response = await api.get(`/schedules_bycars/${car.id}`);
 
     // const unavailable_dates = [...response.data.unavailable_dates, ...dates];
@@ -100,22 +101,21 @@ export function SchedulingDetails() {
       .post(`rentals`, {
         user_id: 1,
         car_id: car.id,
-        startDate: new Date(dates[0]),
-        endDate: new Date(dates[dates.length - 1]),
+        start_date: new Date(dates[0]),
+        end_date: new Date(dates[dates.length - 1]),
         total: rentalTotal,
       })
-      .then((res) =>
-     { navigation.navigate("ConfirmationScreen", {
-        nextScreenRoute: "Home",
-        title: "Carro alugado!",
-        message:
-        "Agora você só precisa ir\naté a concessionária da RENTX\npegar o seu automóvel.",
-      }),
-      console.log(res)}
-      )
+      .then(() => {
+        navigation.navigate("ConfirmationScreen", {
+          nextScreenRoute: "home",
+          title: "Carro alugado!",
+          message:
+            "Agora você só precisa ir\naté a concessionária da RENTX\npegar o seu automóvel.",
+        });
+      })
       .catch((error) => {
         setLoading(false);
-        Alert.alert("Não foi possível realizar o agendamento", error)
+        Alert.alert("Não foi possível realizar o agendamento", error);
       });
   }
 
@@ -221,8 +221,8 @@ export function SchedulingDetails() {
           title="Confirmar"
           onPress={handleSchedulingComplete}
           color={theme.colors.success}
-          loading={loading}
           enabled={!loading}
+          loading={loading}
         />
       </Footer>
     </Container>
