@@ -1,6 +1,12 @@
-import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { database } from "../../databases";
-import { User as ModelUser } from '../../databases/model/User';
+import { User as ModelUser } from "../../databases/model/User";
 import api from "../../services/api";
 
 interface User {
@@ -12,7 +18,6 @@ interface User {
   avatar: string;
   token: string;
 }
-
 
 interface SignInCredentials {
   email: string;
@@ -37,87 +42,89 @@ function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   async function signIn({ email, password }: SignInCredentials) {
-    
     try {
       const response = await api.post("/sessions", {
         email,
         password,
       });
-      
-  
-      const { token, user} = response.data;
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-//storing logged user in the watermelondb
-      const userCollection = database.get<ModelUser>('users');
-      await database.write(async ()=>{
-        await userCollection.create(( newUser )=>{
-            newUser.user_id = user.id,
-            newUser.name = user.name,
-            newUser.email = user.email,
-            newUser.avatar = user.avatar,
-            newUser.driver_license = user.driver_license,
-            newUser.token = token
-        })
-      })
-  
+
+      const { token, user } = response.data;
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      //storing logged user in the watermelondb
+      const userCollection = database.get<ModelUser>("users");
+      await database.write(async () => {
+        await userCollection.create((newUser) => {
+          (newUser.user_id = user.id),
+            (newUser.name = user.name),
+            (newUser.email = user.email),
+            (newUser.avatar = user.avatar),
+            (newUser.driver_license = user.driver_license),
+            (newUser.token = token);
+        });
+      });
+
       setData({ ...user, token });
-    } catch (error : any) {
-      throw new Error(error)
+    } catch (error: any) {
+      throw new Error(error);
     }
-   
   }
 
-  async function signOut(){
+  async function signOut() {
     try {
-      const userCollection = database.get<ModelUser>('users');
-      await database.write(async ()=> {
+      const userCollection = database.get<ModelUser>("users");
+      await database.write(async () => {
         const userSelected = await userCollection.find(data.id);
         await userSelected.destroyPermanently();
-      })
-      setData({}as User);
+      });
+      setData({} as User);
     } catch (error) {
       throw new Error(error);
     }
   }
   async function updateUser(user: User) {
     try {
-      const userCollection = database.get<ModelUser>('users');
-      await database.write(async ()=> {
+      const userCollection = database.get<ModelUser>("users");
+      await database.write(async () => {
         const userSelected = await userCollection.find(user.id);
         await userSelected.update((userData) => {
           userData.name = user.name;
           userData.driver_license = user.driver_license;
           userData.avatar = user.avatar;
-        })
-      })
+        });
+      });
 
-      setData(user)
+      setData(user);
     } catch (error) {
       throw new Error(error);
     }
   }
-  useEffect(()=>{
-//check if user is already logged in 
-    async function loadUserData(){
-      const userCollection = database.get<ModelUser>('users');
-      const response = await userCollection.query().fetch();
-      
+  useEffect(() => {
+    //check if user is already logged in
+    async function loadUserData() {
+      try {
+        const userCollection = database.get<ModelUser>("users");
+        const response = await userCollection.query().fetch();
 
-      if(response.length > 0){
-        const userData = response[0]._raw as unknown as User;
-        api.defaults.headers.common = {
-          Authorization: `bearer ${userData.token}`,
+        if (response.length > 0) {
+          const userData = response[0]._raw as unknown as User;
+          api.defaults.headers.common = {
+            Authorization: `bearer ${userData.token}`,
+          };
+          setData(userData);
         }
-      setData(userData);
-      setLoading(false);
-
+      } catch (error) {
+        console.log(error);
+        throw error;
+      } finally {
+        setLoading(false);
       }
     }
-    loadUserData()
-  },[
-  ])
+    loadUserData();
+  }, []);
   return (
-    <AuthContext.Provider value={{ user: data, signIn, signOut, updateUser, loading }}>
+    <AuthContext.Provider
+      value={{ user: data, signIn, signOut, updateUser, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -129,4 +136,3 @@ function useAuth(): AuthContextData {
 }
 
 export { AuthProvider, useAuth };
-
