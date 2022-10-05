@@ -77,6 +77,35 @@ export function SchedulingDetails() {
 
   async function handleSchedulingComplete() {
     setLoading(true);
+    try {
+      await api
+        .post(`rentals`, {
+          user_id: 1,
+          car_id: car.id,
+          start_date: new Date(dates[0]),
+          end_date: new Date(dates[dates.length - 1]),
+          total: rentalTotal,
+        })
+        .then(() => {
+          navigation.navigate("ConfirmationScreen", {
+            nextScreenRoute: "HomeScreen",
+            title: "Carro alugado!",
+            message:
+              "Agora você só precisa ir\naté a concessionária da RENTX\npegar o seu automóvel.",
+          });
+        })
+        .catch((error) => {
+          setLoading(false);
+          Alert.alert("Não foi possível realizar o agendamento", error);
+        });
+      
+    } catch (error) {
+      setLoading(false);
+          Alert.alert("Não foi possível realizar o agendamento", error);
+    } finally {
+      setLoading(false);
+
+    }
     console.log("handleSchedulingComplete button clicked");
     // const response = await api.get(`/schedules_bycars/${car.id}`);
 
@@ -97,26 +126,6 @@ export function SchedulingDetails() {
     //     id: car.id,
     //     unavailable_dates,
     //   })
-    await api
-      .post(`rentals`, {
-        user_id: 1,
-        car_id: car.id,
-        start_date: new Date(dates[0]),
-        end_date: new Date(dates[dates.length - 1]),
-        total: rentalTotal,
-      })
-      .then(() => {
-        navigation.navigate("ConfirmationScreen", {
-          nextScreenRoute: "home",
-          title: "Carro alugado!",
-          message:
-            "Agora você só precisa ir\naté a concessionária da RENTX\npegar o seu automóvel.",
-        });
-      })
-      .catch((error) => {
-        setLoading(false);
-        Alert.alert("Não foi possível realizar o agendamento", error);
-      });
   }
 
   function handleGoBack() {
